@@ -1,0 +1,182 @@
+<?php
+
+/**
+ * .module file of kapi.
+ */
+
+/**
+ * Get the site reserved names. Used for against malicious usage.
+ */
+function kapi_name_reserved_names_info($type = NULL) {
+  $names = array();
+
+  $names['drupal'] = array(
+    'word'=> array(
+      // a.
+      'access',
+      'admin',
+      'add',
+      'administration',
+      'administrator',
+      'appearance',
+      // c.
+      'change',
+      'content',
+      'config',
+      'configuration',
+      'constant',
+      'create',
+      // d.
+      'dashboard',
+      'data',
+      'database',
+      'db',
+      'delete',
+      'drupal',
+      // e.
+      'edit',
+      // f.
+      'file',
+      'form',
+      'function',
+      // g.
+      'get',
+      'global',
+      // h.
+      'home',
+      'hook',
+      // i.
+      'int',
+      'integer',
+      // l.
+      'lang',
+      'language',
+      'list',
+      'link',
+      'log',
+      'login',
+      // m.
+      'master',
+      'manage',
+      'manager',
+      'member',
+      'moderator',
+      'modify',
+      'module',
+      'myhome',
+      // n.
+      'name',
+      // p.
+      'page',
+      'pager',
+      'people',
+      'permission',
+      'person',
+      'profile',
+      // r.
+      'read',
+      'report',
+      'require',
+      'required',
+      // s.
+      'set',
+      'setting',
+      'sort',
+      'string',
+      'structure',
+      // t.
+      'theme',
+      'topic',
+      'type',
+      // u.
+      'update',
+      'user',
+      'url',
+      // v.
+      'view',
+      // w.      
+      'webmaster',
+      'widget',
+    ),
+    'part' => array(
+      'admin',
+    ),
+  );
+  // Add 's' suffix to all words to create plural form.
+  foreach ($names['drupal']['word'] as $word) {
+    $names['drupal']['word'][] = $word . 's';
+  }
+
+  // All the module machine names.
+  $names['drupal_module']['word'] = array_values(module_list(FALSE, FALSE, TRUE));
+  $names['part'] = array();
+  
+  // Sensitive words.
+  $names['sensitive'] = array(
+    'word' => array(
+      'sex',
+    ),
+    'part' => array(
+      'fuck',
+    ),
+  );
+
+  // hook_kapi_name_resersed_info().
+  $names += module_invoke_all('kapi_name_reserved_info');
+  // hook_kapi_name_reserved_info_alter().
+  drupal_alter('kapi_name_reserved_info', $names);
+
+  return $names;
+}
+
+/**
+ * Check if the name is reserved.
+ * 
+ * @param string $name The being checked name.
+ * @param (optional)array $types Array of type to check, if empty, will check all.
+ * 
+ * @return bool Validation status.
+ */
+function kapi_name_reserved_validate($name, array $types = array()) {
+  $ret = TRUE;
+  
+  $names = kapi_name_reserved_names_info();
+  foreach ($types as $type) {
+    if (in_array($name, $names[$type])) {
+      $ret = FALSE;
+      // Ignore later check if become FALSE.
+      break;
+    }
+  }
+  
+  return $ret;
+}
+
+/**
+ * Solution for deleting the non-empty directory.
+ *
+ * @param string $dirname
+ *   pathname of the directory.
+ *
+ * @return boolean
+ */
+function kapi_directory_delete($dirname) {
+  if (is_dir($dirname)) {
+    if (!($dir_handle = opendir($dirname))) {
+      return FALSE;
+    }
+  }
+  while($file = readdir($dir_handle)) {
+    if ($file != '.' && $file != '..') {
+      if (!is_dir($dirname . '/' . $file)){
+        unlink($dirname . '/' . $file);
+      }
+      else {
+        kapi_delete_directory($dirname . '/' . $file);
+      }
+    }
+  }
+  closedir($dir_handle);
+
+  return rmdir($dirname);
+}

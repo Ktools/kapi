@@ -1,0 +1,4 @@
+name = Kapi
+description = Utility tools for easing developer jobs.
+package = Ktools
+version = VERSION
