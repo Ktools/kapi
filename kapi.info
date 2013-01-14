@@ -1,4 +1,5 @@
 name = Kapi
 description = Utility tools for easing developer jobs.
 package = Ktools
-version = VERSION
+core = 7.x
+version = 7.x-1.x
